@@ -1,0 +1,46 @@
+#creating group in Active Directory using powershell script
+
+
+Import-Module ActiveDirectory
+
+# Define parameters
+param (
+    [string]$GroupName ="",
+    [string]$OU, 
+    [string]$GroupScope, 
+    [string]$GroupType
+)
+
+# Function to create a group
+function Create-ADGroup {
+    try {
+        # Check if the group already exists
+        $group = Get-ADGroup -Filter { Name -eq $GroupName } -ErrorAction Stop
+        Write-Host "Group '$GroupName' already exists in Active Directory." -ForegroundColor Yellow
+    } catch {
+        # If group does not exist, create it
+        try {
+            New-ADGroup -Name $GroupName `
+                        -GroupScope $GroupScope `
+                        -GroupCategory $GroupType `
+                        -Path $OU `
+                        -ErrorAction Stop
+            Write-Host "Group '$GroupName' created successfully." -ForegroundColor Green
+        } catch {
+            Write-Host "Error creating group '$GroupName': $_" -ForegroundColor Red
+        }
+    }
+}
+
+# Main script execution
+try {
+    # Validate parameters
+    if (-not $GroupName) {
+        throw "GroupName parameter is required."
+    }
+
+    # Call the function to create the group
+    Create-ADGroup
+	Write-Output "Group created successfully."
+} catch {
+    Write-Host "An error occurred: $_" -ForegroundColor Red
