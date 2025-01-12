@@ -1,2 +1,43 @@
 #js script to fetch catalog varibales from the description of the SC TASK
 
+(function execute(inputs, outputs) {
+
+    var desc = inputs.description;
+
+    var lines = desc.split("\n");
+
+    // Initialize variables to store extracted values
+    var name, grp_type, grp_scope, path;
+
+    // Loop through each line and extract the relevant information
+    lines.forEach(function(line) {
+        var parts = line.split(":");
+        if (parts.length == 2) {
+            var key = parts[0].trim().toLowerCase();
+            var value = parts[1].trim();
+            switch (key) {
+                case 'group_name':
+                    name = value;
+                    break;
+                case 'group_type':
+                    grp_type = value;
+                    break;
+                case 'group_scope':
+                    grp_scope = value;
+                    break;
+                case 'ou_path':
+                    path = value;
+                    break;
+                default:
+                    outputs.error("Unexpected key found in input data: " + key);
+            }
+        }
+    });
+
+    // Assign extracted values to the outputs
+    outputs.name = name;
+    outputs.grp_type = grp_type;
+    outputs.grp_scope = grp_scope;
+    outputs.path = path;
+
+})(inputs, outputs);
