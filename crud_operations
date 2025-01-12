@@ -1,0 +1,81 @@
+#powershell script to perform CRUD operations
+
+
+function CRUD-Operation {
+    param (
+        [string]$crudMethod, # CRUD Method (Create, Read, Update, Delete)
+        [string]$filePath,   # Path to the CSV file
+        [string]$name = "",  # Name for filtering (used in Update/Delete)
+        [int]$age = 0,       # Age to update (used in Update)
+        [string]$location = ""   # City for creating or updating
+    )
+
+    try {
+        # Perform the operation based on the CRUD method
+        switch ($crudMethod.ToLower()) {
+            "new" {
+                $data = Import-Csv -Path $filePath
+
+                # New entry to add
+                $newEntry = [PSCustomObject]@{
+                    Name = $name
+                    Age  = $age
+                    Location = $location
+                }
+                $data = @($data) + $newEntry
+                Write-Output "Success : New entry added: $newEntry"
+
+                # Save back to the CSV
+                $data | Export-Csv -Path $filePath -NoTypeInformation
+                Write-Output "Changes saved to file."
+            }
+
+            "read" {
+                $data = Import-Csv -Path $filePath
+                Write-Output "Success : Current Data:"
+                $data | Format-Table
+            }
+
+            "update" {
+                $data = Import-Csv -Path $filePath
+                foreach ($row in $data) {
+                    if ($row.Name -eq $name) {
+                        $row.Age = $age
+                        $row.Location = $location
+                        Write-Output "Success : Updated entry: $row"
+                    }
+                    else{
+                        Write-output "No such entry exists"
+                    }
+                }
+
+                # Save back to the CSV
+                $data | Export-Csv -Path $filePath -NoTypeInformation
+                Write-Output "Changes saved to file."
+            }
+
+            "delete" {
+                $data = Import-Csv -Path $filePath
+
+                # Remove the entry where Name matches
+                if ($row.Name -eq $name){
+                     $data = $data | Where-Object { $_.Name -ne $name }
+                    Write-Output "Success :  Entry deleted: $name"
+                }
+                else{
+                    Write-Output "No such entry exists"
+                }
+
+                # Save back to the CSV
+                $data | Export-Csv -Path $filePath -NoTypeInformation
+                Write-Output "Changes saved to file."
+            }
+
+            default {
+                Write-Output "Please try again,  default case running"
+            }
+        }
+    } catch {
+        Write-Error "An error occurred during CRUD operation: $_"
+    } 
+}
